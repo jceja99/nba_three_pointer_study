@@ -1,0 +1,101 @@
+---
+title: "An Analysis on NBA 3 Pointers: 2013 - 2022"
+output: html_document
+date: "2023-06-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+load("NBAcasestudy.rdata")
+
+```
+
+## Introduction
+
+Basketball is one of the largest sports in the world with the NBA being the premiere professional league notorious for carrying the greatest assembly of basketball talent in the world. Far and wide, the NBA is viewed as the model for how basketball is supposed to be played. So how exactly is NBA basketball being played?
+
+At its core, NBA basketball boils down to a combination of offense and defense. One team plays their offensive strategy to score the basketball in the opposing team's basket while another team uses defensive strategy to prevent that. Defensive strategy can be subtle and difficult to appreciate for the casual observer but  an amazing offensive play notably stands out to most people. Powerful dunks and sharp mid range shooting was a staple for many years in the NBA with a long range 3 pointer shot, 24 feet away from the basket, being less common. The rise of players such as Stephen Curry and Damian Lillard has taken the league in a direction that many say favors a high volume of 3 point shots. After all, 3 points is greater than 2 points.
+
+We want to see just how powerful of an impact that the 3 point shot has made. This study will use official NBA data from the 2012-13 season up to the 2021-22 season. We will study NBA revenue, shots attempted, top players, and game attendance to provide a recommendations and future predictions on the direction of the NBA's style of offense! 
+
+## NBA Revenue
+
+The NBA cumulatively brings in billions of dollars of revenue from its collection of 30 different teams. We decided to take a look at how NBA revenue has changed over the years. The website [runrepeat.com](https://runrepeat.com/nba-revenue-statistics) was our source for NBA revenue statistics. We compiled a csv on Excel based off their statistics and loaded the csv into a dataframe which was presented using the following code.
+
+```{r nba_revenue}
+ggplot(nba_revenue, aes(x = Season, y = Total)) +
+    geom_segment(aes(x = Season, xend = Season, y = 0, yend = Total)) +
+    geom_point(size = 4, pch = 21, bg = 4, col = 1) +
+    coord_flip() + scale_x_continuous(n.breaks = 10) + labs(y = "Total NBA Revenue (USD Millions)")
+
+nba_revenue %>% summarise(avg_total_nba_revenue = mean(Total))
+```
+
+We can see that NBA league revenue gradually rose from the 2012 - 2013 season up to the 2021-22 season with the peak of revenue occuring during the 2019-20 season. The 2020-21 and 2021-22 season notably saw a decline in revenue but was still above the average. A variety of factors could have had an impact on revenue but we just want to see how the NBA has been trending this past decade as it pertains to market value. 
+
+## Field Goals Attempted
+
+We would like to study the three point shot by first checking the distribution of shots in the NBA by season. We studied the volume of shots attempted and grouped them by field goals, two pointers, and three pointers. We will begin by looking at the total field goals attempted by year. The following illustrates the volume of field goals attempted.
+
+```{r game}
+ggplot(data=fga_decade, aes(x=season,y=fga_per_game)) + geom_bar(stat="identity", fill="orange") + scale_x_continuous(n.breaks = 10) + labs(x = "Season", y="FGA Per Game") + theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+fga_decade %>% summarize(FGA_avg = mean(fga_per_game))
+```
+
+We have calculated the average field goals attempted within our decade of data and see that from 2019 - 2022, the number of field goals attempted surpass the average. They also seem to be increasing as time progresses with 2022 containing the highest number of field goals attempted for the decade. Now that we know that the number of shots has been increasing, we will look at three and two pointers next to observe the volume. Here is a bar graph and the average amount of total amount of three pointers attempted.
+
+```{r 3pa}
+ggplot(data=x3pa_decade_season, aes(x=season,y=x3pa_per_game)) + geom_bar(stat="identity", fill="blue") + scale_x_continuous(n.breaks = 10) + labs(x = "Season", y="3 Pointers Attempted") + theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+View(x3pa_decade_season)
+
+x3pa_decade_season %>% summarize(x3pa_avg = mean(x3pa_per_game))
+```
+This bar graph is a clear representation of a strong uptrend regarding the volume of three point shots attempted. From 2018 - 2022, the volume of three point shots attempted is above the average and only increases greatly. It is obvious that this decade is the decade of the three pointer. As even the casual fan can tell, the volume of three point shots has greatly increased in the NBA and the data supports this conclusion. Now, we ask: Has the rise of three pointers led to a drop in two pointers? We plot another bar graph to answer this question.
+
+```{r 2pa}
+ggplot(data=x2pa_sum_decade, aes(x=season,y=x2pa_per_game)) + geom_bar(stat="identity", fill="darkgreen") + scale_x_continuous(n.breaks = 10) + labs(x = "Season", y="2 Pointers Attempted") + theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+x2pa_sum_decade %>% summarize(x2pa_avg = mean(x2pa_per_game))
+```
+There is not a clear uptrend or downtrend with the volume of two pointers attempted over the last decade. It seems as though the league has maintained roughly the same amount of two pointers attempted over these years. Even though the volume of three point shots has clearly increased, the volume of two point shots has not received any noteworthy increase or decrease. This leads to the deduction that the increase in field goals attempted has been brought upon mostly by the increase in three pointers attempted. With this volume increase, we wonder how the top scorers of the league have  
+
+## Top 200 Scorers and Three Pointers
+We took points per game and three point shot statistics from each of the league's player's seasons and created a dataframe named "top_200_scorers_decade". This dataframe takes 200 instances of the highest points per game over the decade studied. The dataframe displays the season, player name, and three pointers attempted with percentage. Here is a preview of the data.
+```{r x3pa_ppg}
+head(top_200_scorers_decade)
+```
+
+We decided to create a scatterplot and trendline with the data to show whether there is a positive or negative correlation.
+```{r x3pa_ppg_decade}
+ggplot(data=top_200_scorers_decade,aes(x= pts_per_game, y= x3pa_per_game)) + geom_point() + geom_smooth() + labs(caption="Based on top 200 scorers", x="Points Per Game", y = "3PA Per Game") + scale_y_continuous(n.breaks =10)
+
+top_200_scorers_decade %>% summarize(ppg_average = mean(pts_per_game), x3pa_average = mean(x3pa_per_game))
+```
+As is seen, there may be little positive correlation between the points scored and three point shots attempted. At the highest extreme of point scored per game, we have James Harden who was known for being a high volume three point shooting guard. We also note that 4 of the top 5 scoring seasons in the last decade are from guards who are often encouraged to shoot three pointers above forwards and centers. It seems that the data has not provided us with enough evidence that shooting a higher volume of three point shots will always result in a higher scoring season. It seems to be the case that there are some shooters who will prefer the three point shot and succeed but others can score just as high without taking a higher volume of three point shots. Beyond just studying the game side of three pointers, we wonder if high three pointer volume garners an interest in fans. If so, is that interest bringing more fans to the games?
+
+## Attendance and Three Pointers
+We decided to study the attendance to games and compare that with the amount of three pointers attempted throughout the last decade. We sorted attendance and three pointer data on each of the 30 teams in the league and added After careful joining and aggregation of data, we compiled a data frame. Here is a preview.
+```{r x3pa_attendance}
+head(x3pa_decade)
+```
+Now, we decided on another scatterplot with a trendline to show the correlation between attendance and three pointers attempted. There were a few outliers that disrupted the trendline so we highlighted the most relevant part of the scatterplot to focus on.
+```{r x3pa_attendance_x3pa}
+ggplot(x3pa_decade, aes(x=x3pa_total_decade, y=attendance_decade)) + geom_point() + geom_smooth(data=subset(x3pa_decade,x3pa_total_decade < 25000 & x3pa_total_decade > 17000),fill="green",color="black") + labs(x= "Total 3 Pointers Attempted", y="Total Attendance")
+```
+
+There is a positive correlation between three pointers attempted and attendance. Although there are many factors that contibute to attendance, we can clearly see that teams who have shot more three pointers are trending. Fans have taken to watching higher three point shooting teams within the last decade! It is in the NBA/s interest to have more fans in arenas to watch the games and generate revenue. The three point shot is supporting the NBA in ganering the type of attendance it wants!
+
+## Recommendations
+To recap our analysis has shown us a few insights about the three point shot this past decade. We clearly saw that the three point shot has increased in usage significantly. We studied the top 200 scoring statistics and observed that there isn't a strong enough correlation to conclude that more three pointers attempted translated to more points per game. We looked at league revenue and saw that there was a strong steady increase up to and including the 2020 season. In 2021 and 2022, there was some decrease in revenue which may have to do with restrictions such as COVID. We further researched revenue by looking at attendance. We saw that there is positive correlation between the amount of three pointers taken and attendance. Fans seem to visit the more games when three pointers are shot in high volume. With this information we ask, what could the league do to support further growth. Can we oredict the direction of the league and capitalize on it?
+
+Since we know that NBA revenue has been increasing in the past decade and that it continues to increase, it's safe to say that revenue will continue growing. Everything that the league has been doing in terms of promotions and playing the game has been a great success. We recommend the league continues what it's been doing but we can add some extra tidbits that can potentially add to revenue growth.
+
+When we analyzed field goals attempted, we noticed that field goals did in fact increase over time. When analyzing deeper, two pointers attempted remained consistent over time but three pointers attempted saw a massive notable increase. Not only that but we saw that teams that shot more three pointers attracted more attendance by fans over the decade. Because of that we believe that the league should do its best to promote the three point shot. Social media is a powerful tool for this. Highlight reels on pages should concentrate on three pointers as much if not more than dunks and other highlight plays. Social media teams can plan out posts that highlight the importance of the three point shot. Die hard and casual fans alike love NBA records so pushing these statistics are important to garnering more fans and hype behind the league and three point shot.
+
+Lastly, we saw that the league's top scorers this decade attempted more three pointers. However, at a larger subset of scorers, three pointers attempted don't have much an impact on points scored. Top notable players such as James Harden and Stephen Curry put up an incredible amount of points per games. They also shot an incredible amount of three pointers per game. We believe that the game is moving in a direction where the top scorers will be high volume three point shooters. We encourage the league to scout out players that are shooting three pointers at a high volume and efficiently. These players are likely to become great scorers and attract more fans to the league. We also recommend that coaches develop their players while placing an emphasis on three point shooting. Stars that shoot threes are likely to have the highest scoring seasons.
+
+## Conclusion
+This past decade, the NBA has come to a point where the game is trending towards a three point style of play. With league recenue increasing in recent years, we discovered that attendance has been higher when teams shoot more three pointers. Three pointers have significantly increased over the decade. However, we found that the top 200 scorers did not shoot as many threes as we might think. When looking at the extremes, the highest scorers shot the most threes. IF the league keeps doing what they're doing while adding our recommendations to the mix, we believe that the league will sustain revenue growth for years to come.
